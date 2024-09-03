@@ -22,6 +22,7 @@ import com.braintreepayments.api.core.BraintreeException;
 import com.braintreepayments.api.core.BraintreeRequestCodes;
 import com.braintreepayments.api.core.ClientToken;
 import com.braintreepayments.api.core.Configuration;
+import com.braintreepayments.api.core.LinkType;
 import com.braintreepayments.api.core.MetadataBuilder;
 
 import org.json.JSONException;
@@ -35,7 +36,7 @@ import java.util.Objects;
  */
 public class VenmoClient {
 
-    private static final String LINK_TYPE = "universal";
+    private static final LinkType LINK_TYPE = LinkType.UNIVERSAL;
     private final BraintreeClient braintreeClient;
     private final VenmoApi venmoApi;
     private final VenmoSharedPrefsWriter sharedPrefsWriter;
@@ -188,7 +189,7 @@ public class VenmoClient {
                 .build();
 
         BrowserSwitchOptions browserSwitchOptions = new BrowserSwitchOptions()
-                .requestCode(BraintreeRequestCodes.VENMO)
+                .requestCode(BraintreeRequestCodes.VENMO.getCode())
                 .url(venmoBaseURL)
                 .returnUrlScheme(braintreeClient.getReturnUrlScheme());
         VenmoPaymentAuthRequestParams params = new VenmoPaymentAuthRequestParams(
@@ -338,7 +339,7 @@ public class VenmoClient {
     private AnalyticsEventParams getAnalyticsParams() {
         AnalyticsEventParams eventParameters = new AnalyticsEventParams();
         eventParameters.setPayPalContextId(payPalContextId);
-        eventParameters.setLinkType(LINK_TYPE);
+        eventParameters.setLinkType(LINK_TYPE.getStringValue());
         eventParameters.setVaultRequest(isVaultRequest);
         return eventParameters;
     }
