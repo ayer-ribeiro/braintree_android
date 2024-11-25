@@ -8,6 +8,7 @@ import com.braintreepayments.api.core.BraintreeException
 import com.braintreepayments.api.core.Configuration
 import com.braintreepayments.api.core.DeviceInspector
 import com.braintreepayments.api.core.ExperimentalBetaApi
+import com.braintreepayments.api.core.MerchantRepository
 import com.braintreepayments.api.datacollector.DataCollector
 import com.braintreepayments.api.datacollector.DataCollectorInternalRequest
 import com.braintreepayments.api.paypal.PayPalPaymentResource.Companion.fromJson
@@ -23,11 +24,12 @@ internal class PayPalInternalClient(
     private val braintreeClient: BraintreeClient,
     private val dataCollector: DataCollector = DataCollector(braintreeClient),
     private val apiClient: ApiClient = ApiClient(braintreeClient),
-    private val deviceInspector: DeviceInspector = DeviceInspector()
+    private val deviceInspector: DeviceInspector = DeviceInspector(),
+    private val merchantRepository: MerchantRepository = MerchantRepository.instance,
 ) {
-    private val cancelUrl = "${braintreeClient.appLinkReturnUri}://onetouch/v1/cancel"
-    private val successUrl = "${braintreeClient.appLinkReturnUri}://onetouch/v1/success"
-    private val appLink = braintreeClient.appLinkReturnUri?.toString()
+    private val cancelUrl = "${merchantRepository.appLinkReturnUri}://onetouch/v1/cancel"
+    private val successUrl = "${merchantRepository.appLinkReturnUri}://onetouch/v1/success"
+    private val appLink = merchantRepository.appLinkReturnUri?.toString()
 
     fun sendRequest(
         context: Context,
@@ -48,18 +50,17 @@ internal class PayPalInternalClient(
                     CREATE_SINGLE_PAYMENT_ENDPOINT
                 }
                 val url = "/v1/$endpoint"
-                val appLinkReturn = if (isBillingAgreement) appLink else null
 
-                if (isBillingAgreement && (payPalRequest as PayPalVaultRequest).enablePayPalAppSwitch) {
+                if (payPalRequest.enablePayPalAppSwitch) {
                     payPalRequest.enablePayPalAppSwitch = isPayPalInstalled(context)
                 }
 
                 val requestBody = payPalRequest.createRequestBody(
                     configuration = configuration,
-                    authorization = braintreeClient.authorization,
+                    authorization = merchantRepository.authorization,
                     successUrl = successUrl,
                     cancelUrl = cancelUrl,
-                    appLink = appLinkReturn
+                    appLink = appLink
                 ) ?: throw JSONException("Error creating requestBody")
 
                 sendPost(
@@ -162,7 +163,7 @@ internal class PayPalInternalClient(
 
     fun isAppSwitchEnabled(payPalRequest: PayPalRequest): Boolean {
         return (payPalRequest is PayPalVaultRequest) &&
-                payPalRequest.enablePayPalAppSwitch
+            payPalRequest.enablePayPalAppSwitch
     }
 
     fun isPayPalInstalled(context: Context): Boolean {

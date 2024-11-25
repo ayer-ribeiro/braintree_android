@@ -11,6 +11,7 @@ import com.braintreepayments.api.core.BraintreeRequestCodes
 import com.braintreepayments.api.core.Configuration
 import com.braintreepayments.api.core.ExperimentalBetaApi
 import com.braintreepayments.api.core.LinkType
+import com.braintreepayments.api.core.MerchantRepository
 import com.braintreepayments.api.core.TokenizationKey
 import com.braintreepayments.api.core.UserCanceledException
 import com.braintreepayments.api.paypal.PayPalPaymentIntent.Companion.fromString
@@ -33,6 +34,7 @@ class PayPalClient internal constructor(
 
     private val braintreeClient: BraintreeClient,
     private val internalPayPalClient: PayPalInternalClient = PayPalInternalClient(braintreeClient),
+    private val merchantRepository: MerchantRepository = MerchantRepository.instance,
 ) {
 
     /**
@@ -160,7 +162,7 @@ class PayPalClient internal constructor(
 
         return BrowserSwitchOptions()
             .requestCode(BraintreeRequestCodes.PAYPAL.code)
-            .appLinkUri(braintreeClient.appLinkReturnUri)
+            .appLinkUri(merchantRepository.appLinkReturnUri)
             .url(Uri.parse(paymentAuthRequest.approvalUrl))
             .launchAsNewTask(braintreeClient.launchesBrowserSwitchAsNewTask())
             .metadata(metadata)
