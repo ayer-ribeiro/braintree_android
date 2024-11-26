@@ -19,9 +19,9 @@ import org.json.JSONObject
 class BraintreeClient internal constructor(
     applicationContext: Context,
     integrationType: IntegrationType,
-    authorization: Authorization,
+    val authorization: Authorization,
     returnUrlScheme: String,
-    appLinkReturnUri: Uri?,
+    val appLinkReturnUri: Uri?,
     private val analyticsClient: AnalyticsClient = AnalyticsClient(applicationContext),
     private val httpClient: BraintreeHttpClient = BraintreeHttpClient(),
     private val graphQLClient: BraintreeGraphQLClient = BraintreeGraphQLClient(),
